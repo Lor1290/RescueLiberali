@@ -8,9 +8,6 @@
 
 _A favore della nazionalizzazione delle ferrovie: "A MORTE TURATI"_
 
-<br />
-<br />
-
 ### COLLABORATORI
 
 - [@Lor1290](https://www.github.com/Lor1290) 
