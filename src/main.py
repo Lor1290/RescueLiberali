@@ -39,6 +39,7 @@ gps.enable(timestep)
 lidar = robot.getDevice("lidar")
 lidar.enable(timestep)
 
+"""------ Basic functions ------"""
 def forward():
     wheel_right.setVelocity(max_velocity)
     wheel_left.setVelocity(max_velocity)
@@ -66,6 +67,20 @@ def delay(ms):
         if (robot.getTime() - intial_time) * 1000 >= ms:
             break
 
+def get_colour():
+    image = colour_sensor.getImage()
+    r = colour_sensor.imageGetRed(image, 1, 0, 0)
+    g = colour_sensor.imageGetGreen(image, 1, 0, 0)
+    b = colour_sensor.imageGetBlue(image, 1, 0, 0)
+    return r, g, b
+
+def get_position():
+    position = gps.getValues()
+    x = position[0] * 100
+    y = position[2] * 100
+    return x, y
+
+"""------ Main ------"""
 def main():
     pass
 
