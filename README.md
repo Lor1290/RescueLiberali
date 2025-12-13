@@ -1,15 +1,13 @@
-# Rescue Simulation: liberali
-
-<div class="align">
+# Rescue Simulation Liberali
+<p align="center">
 	<img src="./RDimages/RMicon.png" />	
-</div>
+</p>
 
 <br />
 
-_A favore della nazionalizzazione delle ferrovie: "A MORTE TURATI"_
+<p align="center"><i>A favore della nazionalizzazione delle ferrovie: "A MORTE TURATI"</i></p>
 
-### COLLABORATORI
-
+### Authors
 - [@Lor1290](https://www.github.com/Lor1290) 
 - [@khr0me](https://www.github.com/khr0me)
 - [@what-a-simo](https://www.github.com/what-a-simo)
