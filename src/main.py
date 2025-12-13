@@ -1,4 +1,4 @@
-from controller import Robot, DistanceSensor, PositionSensor, Camera, GPS, Emitter, Lidar
+from controller import Robot, DistanceSensor, Camera, GPS, Emitter, Lidar
 
 timestep = 32
 max_velocity = 6.28
@@ -55,9 +55,16 @@ def turn_left():
     wheel_right.setVelocity(max_velocity)
     wheel_left.setVelocity(-max_velocity)
 
-def stop():
+def stop(ms):
     wheel_right.setVelocity(0)
     wheel_left.setVelocity(0)
+    delay(ms)
+
+def delay(ms):
+    intial_time = robot.getTime()
+    while robot.step(timestep) != -1:
+        if (robot.getTime() - intial_time) * 1000 >= ms:
+            break
 
 def main():
     pass
