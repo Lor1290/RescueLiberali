@@ -1,30 +1,30 @@
 from controller import Robot, DistanceSensor, Camera, GPS, Emitter, Lidar
 
-timestep = 32
 max_velocity = 6.28
+timestep = 32
+
 robot = Robot()
 
 """------ Wheels ------"""
-wheel_right = robot.getDevice("wheel1 motor")
-wheel_left = robot.getDevice("wheel2 motor")
-wheel_right.setPosition(float("inf"))
-wheel_left.setPosition(float("inf"))
-wheel_right.setVelocity(0)
-wheel_left.setVelocity(0)
+Rwheel = robot.getDevice("wheel1 motor")
+Lwheel = robot.getDevice("wheel2 motor")
+
+Rwheel.setPosition(float("inf"))
+Lwheel.setPosition(float("inf"))
+
+Rwheel.setVelocity(0)
+Lwheel.setVelocity(0)
 
 """------ Camera ------"""
-camera_right = robot.getDevice("camera1")
-camera_left = robot.getDevice("camera2")
-camera_right.enable(timestep)
-camera_left.enable(timestep)
+Rcamera = robot.getDevice("camera1")
+Lcamera = robot.getDevice("camera2")
 
-"""------ Inertial unit ------"""
-inertial_unit = robot.getDevice("inertial_unit")
-inertial_unit.enable(timestep)
+Rcamera.enable(timestep)
+Lcamera.enable(timestep)
 
 """------ Colour Sensor ------"""
-colour_sensor = robot.getDevice("colour_sensor")
-colour_sensor.enable(timestep)
+Scolor = robot.getDevice("colour_sensor")
+Scolor.enable(timestep)
 
 """"------ Emitter & Receiver ------"""
 receiver = robot.getDevice("receiver")
@@ -40,41 +40,29 @@ lidar = robot.getDevice("lidar")
 lidar.enable(timestep)
 
 """------ Basic functions ------"""
-def forward():
-    wheel_right.setVelocity(max_velocity)
-    wheel_left.setVelocity(max_velocity)
+def DriveTo(dx: int, sx: int):
+        Rwheel.setVelocity(dx)
+        Lwheel.setVelocity(sx)
 
-def back():
-    wheel_right.setVelocity(-max_velocity)
-    wheel_left.setVelocity(-max_velocity)
+def Stop(ms):
+    Rwheel.setVelocity(0)
+    Lwheel.setVelocity(0)
+    Delay(ms)
 
-def turn_right():
-    wheel_right.setVelocity(-max_velocity)
-    wheel_left.setVelocity(max_velocity)
-
-def turn_left():
-    wheel_right.setVelocity(max_velocity)
-    wheel_left.setVelocity(-max_velocity)
-
-def stop(ms):
-    wheel_right.setVelocity(0)
-    wheel_left.setVelocity(0)
-    delay(ms)
-
-def delay(ms):
+def Delay(ms):
     intial_time = robot.getTime()
     while robot.step(timestep) != -1:
         if (robot.getTime() - intial_time) * 1000 >= ms:
             break
 
-def get_colour():
-    image = colour_sensor.getImage()
-    r = colour_sensor.imageGetRed(image, 1, 0, 0)
-    g = colour_sensor.imageGetGreen(image, 1, 0, 0)
-    b = colour_sensor.imageGetBlue(image, 1, 0, 0)
+def getColor():
+    image = Scolor.getImage()
+    r = Scolor.imageGetRed(image, 1, 0, 0)
+    g = Scolor.imageGetGreen(image, 1, 0, 0)
+    b = Scolor.imageGetBlue(image, 1, 0, 0)
     return r, g, b
 
-def get_position():
+def getPosition():
     position = gps.getValues()
     x = position[0] * 100
     y = position[2] * 100
