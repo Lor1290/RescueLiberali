@@ -27,20 +27,6 @@
 		"a": 1.57,
 		"custom": []
 	},
-	"gyro": {
-		"dictName": "gyro",
-		"name": "Gyro",
-		"customName": "gyro",
-		"type": "add",
-		"x": 0,
-		"y": 0,
-		"z": 0,
-		"rx": -0.5858,
-		"ry": 0.5858,
-		"rz": 0.5858,
-		"a": 2.09,
-		"custom": []
-	},
 	"gps": {
 		"dictName": "gps",
 		"name": "GPS",
@@ -114,6 +100,20 @@
 		"rx": -0.58,
 		"ry": 0.58,
 		"rz": 0.58,
+		"a": 2.09,
+		"custom": []
+	},
+	"iu": {
+		"dictName": "iu",
+		"name": "InertialUnit",
+		"customName": "inertial_unit",
+		"type": "add",
+		"x": 0,
+		"y": 0,
+		"z": 0,
+		"rx": -0.5858,
+		"ry": 0.5858,
+		"rz": 0.5858,
 		"a": 2.09,
 		"custom": []
 	}
