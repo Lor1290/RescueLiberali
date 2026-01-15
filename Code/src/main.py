@@ -1,27 +1,22 @@
-from controller import DistanceSensor, Emitter, Robot, Camera, Lidar, GPS
-
+from controller import Robot
 import numpy as np
-import math
+
 
 # **************** #
 # *** CONSTANT *** #
 # **************** #
+
+robot = Robot()
 VELOCITY = 6.28
-TIMESTEP = 1
+TIMESTEP = int(robot.getBasicTimeStep())
+
 
 # ******************************* #
 # *** INITIALIZER - COMPONENT *** #
 # ******************************* #
-robot = Robot()
 
-lWheel = robot.getDevice("lWheel motor")
-rWheel = robot.getDevice("rWheel motor")
-
-lEncoder = lWheel.getPositionSensor()
-rEncoder = rWheel.getPositionSensor()
-
-lEncoder.enable(TIMESTEP)
-rEncoder.enable(TIMESTEP)
+rWheel = robot.getDevice("wheel1 motor")
+lWheel = robot.getDevice("wheel2 motor")
 
 rWheel.setPosition(float("inf"))
 lWheel.setPosition(float("inf"))
@@ -29,14 +24,19 @@ lWheel.setPosition(float("inf"))
 rWheel.setVelocity(0)
 lWheel.setVelocity(0)
 
-rCamera = robot.getDevice("lCamera")
-lCamera = robot.getDevice("rCamera")
+inertialUnit = robot.getDevice("inertial_unit")
+inertialUnit.enable(TIMESTEP)
+
+rCamera = robot.getDevice("camera1")
+lCamera = robot.getDevice("camera2")
 
 rCamera.enable(TIMESTEP)
 lCamera.enable(TIMESTEP)
 
-sColor = robot.getDevice("cSensor")
+sColor = robot.getDevice("colour_sensor")
 sColor.enable(TIMESTEP)
+
+emitter = robot.getDevice("emitter")
 
 receiver = robot.getDevice("receiver")
 receiver.enable(TIMESTEP)
@@ -47,43 +47,28 @@ gps.enable(TIMESTEP)
 lidar = robot.getDevice("lidar")
 lidar.enable(TIMESTEP)
 
-emitter = robot.getDevice("emitter")
+pSensor1 = robot.getDevice("distance sensor1")
+pSensor2 = robot.getDevice("distance sensor2")
+pSensor3 = robot.getDevice("distance sensor3")
+pSensor4 = robot.getDevice("distance sensor4")
+pSensor5 = robot.getDevice("distance sensor5")
+pSensor6 = robot.getDevice("distance sensor6")
+pSensor7 = robot.getDevice("distance sensor7")
+pSensor8 = robot.getDevice("distance sensor8")
 
-# **************** #
-# *** MOVEMENT *** #
-# **************** #
-
-def goFwd(dx = VELOCITY, sx = VELOCITY):
-    rWheel.setVelocity(dx)
-    lWheel.setVelocity(sx)
-
-def goLeft(dx = VELOCITY, sx = VELOCITY):
-    rWheel.setVelocity(dx)
-    lWheel.setVelocity(-sx)
-
-def goRight(dx = VELOCITY, sx = VELOCITY):
-    rWheel.setVelocity(-dx)
-    lWheel.setVelocity(sx)
-
-def goBack(dx = VELOCITY, sx = VELOCITY):
-    rWheel.setVelocity(-dx)
-    lWheel.setVelocity(-sx)
-
-def stop(ms = 2000):
-    rWheel.setVelocity(0)
-    lWheel.setVelocity(0)
-    delay(ms)
-
-def delay(ms):
-    intial_time = robot.getTime()
-    while robot.step(TIMESTEP) != -1:
-        if (robot.getTime() - intial_time) * 1000 >= ms:
-            break   
+pSensor1.enable(TIMESTEP)
+pSensor2.enable(TIMESTEP)
+pSensor3.enable(TIMESTEP)
+pSensor4.enable(TIMESTEP)
+pSensor5.enable(TIMESTEP)
+pSensor6.enable(TIMESTEP)
+pSensor7.enable(TIMESTEP)
+pSensor8.enable(TIMESTEP)
 
 
-# ************** #
-# *** GETTER *** #
-# ************** #
+# ***************** #
+# *** Functions *** #
+# ***************** #
 
 def getColor():
     image = sColor.getImage()
@@ -98,19 +83,64 @@ def getPosition():
     y = position[2] * 100
     return x, y
 
+def stop(ms = 2000):
+    rWheel.setVelocity(0)
+    lWheel.setVelocity(0)
+    delay(ms)
+
+def delay(ms):
+    init_time = robot.getTime()
+    while robot.step(TIMESTEP) != -1:
+        if (robot.getTime() - init_time) * 1000 >= ms:
+            break 
+
+
 # ************ #
 # *** MAIN *** #
-
 # ************ #
-def main():
-    goLeft()
-    while robot.step(TIMESTEP) != -1:
-        if lEncoder.getValue() <= -2.20:
-            stop()
-            break
-    
-    print(lEncoder.getValue())
 
+def main():
+    while robot.step(TIMESTEP) != -1:
+        # **************** #
+        # *** MOVEMENT *** #
+        # **************** #
+
+        print("-------------------------------------")
+        print("MEASUREMENT")
+        print(f" - LEFT WALL: {pSensor7.getValue()*100}")
+        print(f" - FRONT WALL: {pSensor1.getValue()*100}")
+        print(f" - LEFT CORNER: {pSensor8.getValue()*100}")
+
+        lWall = pSensor7.getValue()*100 < 10
+        fWall = pSensor1.getValue()*100 < 10
+        lCorner = pSensor8.getValue()*100 < 10
+
+        lSpeed = VELOCITY
+        rSpeed = VELOCITY
+
+        print("DIRECTION")
+        if fWall:
+            print(" - Turn right")
+            lSpeed = VELOCITY
+            rSpeed = -VELOCITY
+        else:
+            if lWall:
+                print(" - Drive forward")
+                lWall = VELOCITY
+                rSpeed = VELOCITY
+            else:
+                print(" - Turn left")
+                lSpeed = VELOCITY/16
+                rSpeed = VELOCITY
+            if lCorner:
+                print(" - Too close, turn right")
+                lSpeed = VELOCITY
+                rSpeed = VELOCITY/16
+
+        print("-------------------------------------", "\n", "\n")
+
+        rWheel.setVelocity(rSpeed)
+        lWheel.setVelocity(lSpeed)
 
 if __name__ == "__main__":
     main()
