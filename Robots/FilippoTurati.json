@@ -2,7 +2,7 @@
 	"Wheel 1": {
 		"dictName": "Wheel 1",
 		"name": "Wheel",
-		"customName": "wheel1",
+		"customName": "lWheel",
 		"type": "",
 		"x": 260,
 		"y": 0,
@@ -16,7 +16,7 @@
 	"Wheel 2": {
 		"dictName": "Wheel 2",
 		"name": "Wheel",
-		"customName": "wheel2",
+		"customName": "rWheel",
 		"type": "",
 		"x": -260,
 		"y": 0,
@@ -44,7 +44,7 @@
 	"camera1": {
 		"dictName": "camera1",
 		"name": "Camera",
-		"customName": "rightcamera",
+		"customName": "rCamera",
 		"type": "add",
 		"x": 370,
 		"y": 200,
@@ -58,27 +58,10 @@
 			64
 		]
 	},
-	"camera2": {
-		"dictName": "camera2",
-		"name": "Camera",
-		"customName": "leftcamera",
-		"type": "add",
-		"x": -370,
-		"y": 200,
-		"z": 0,
-		"rx": -0.04,
-		"ry": 0.69,
-		"rz": 0.72,
-		"a": 3.06,
-		"custom": [
-			64,
-			64
-		]
-	},
 	"colsensor": {
 		"dictName": "colsensor",
 		"name": "Colour sensor",
-		"customName": "colour_sensor",
+		"customName": "cSensor",
 		"type": "add",
 		"x": 0,
 		"y": -100,
@@ -103,18 +86,21 @@
 		"a": 2.09,
 		"custom": []
 	},
-	"iu": {
-		"dictName": "iu",
-		"name": "InertialUnit",
-		"customName": "inertial_unit",
+	"camera2": {
+		"dictName": "camera2",
+		"name": "Camera",
+		"customName": "lCamera",
 		"type": "add",
-		"x": 0,
-		"y": 0,
+		"x": -370,
+		"y": 200,
 		"z": 0,
-		"rx": -0.5858,
-		"ry": 0.5858,
-		"rz": 0.5858,
-		"a": 2.09,
-		"custom": []
+		"rx": -0.04,
+		"ry": 0.69,
+		"rz": 0.72,
+		"a": 3.06,
+		"custom": [
+			64,
+			64
+		]
 	}
 }

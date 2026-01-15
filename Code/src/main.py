@@ -1,4 +1,5 @@
-from controller import DistanceSensor, Emitter, Robot, Camera, Lidar, InertialUnit, GPS
+from controller import DistanceSensor, Emitter, Robot, Camera, Lidar, GPS
+
 import numpy as np
 import math
 
@@ -6,16 +7,21 @@ import math
 # *** CONSTANT *** #
 # **************** #
 VELOCITY = 6.28
-TIMESTEP = 32
-
+TIMESTEP = 1
 
 # ******************************* #
 # *** INITIALIZER - COMPONENT *** #
 # ******************************* #
 robot = Robot()
 
-rWheel = robot.getDevice("wheel1 motor")
-lWheel = robot.getDevice("wheel2 motor")
+lWheel = robot.getDevice("lWheel motor")
+rWheel = robot.getDevice("rWheel motor")
+
+lEncoder = lWheel.getPositionSensor()
+rEncoder = rWheel.getPositionSensor()
+
+lEncoder.enable(TIMESTEP)
+rEncoder.enable(TIMESTEP)
 
 rWheel.setPosition(float("inf"))
 lWheel.setPosition(float("inf"))
@@ -23,26 +29,23 @@ lWheel.setPosition(float("inf"))
 rWheel.setVelocity(0)
 lWheel.setVelocity(0)
 
-rCamera = robot.getDevice("leftcamera")
-lCamera = robot.getDevice("rightcamera")
+rCamera = robot.getDevice("lCamera")
+lCamera = robot.getDevice("rCamera")
 
 rCamera.enable(TIMESTEP)
 lCamera.enable(TIMESTEP)
 
-sColor = robot.getDevice("colour_sensor")
+sColor = robot.getDevice("cSensor")
 sColor.enable(TIMESTEP)
 
 receiver = robot.getDevice("receiver")
 receiver.enable(TIMESTEP)
-
+ 
 gps = robot.getDevice("gps")
 gps.enable(TIMESTEP)
 
 lidar = robot.getDevice("lidar")
 lidar.enable(TIMESTEP)
-
-iu = robot.getDevice("inertial_unit")
-iu.enable(TIMESTEP)
 
 emitter = robot.getDevice("emitter")
 
@@ -95,26 +98,19 @@ def getPosition():
     y = position[2] * 100
     return x, y
 
-def getIU():
-    yaw = np.round(iu.getRollPitchYaw()[2] * (180/math.pi), 1)
-    return yaw
-
-
-def Test():
-    yaw = getIU()
-    goLeft()
-
-    while True:
-        yaw = getIU()
-        print(yaw)
-
-
 # ************ #
 # *** MAIN *** #
+
 # ************ #
 def main():
+    goLeft()
     while robot.step(TIMESTEP) != -1:
-        Test()
+        if lEncoder.getValue() <= -2.20:
+            stop()
+            break
+    
+    print(lEncoder.getValue())
+
 
 if __name__ == "__main__":
     main()
