@@ -9,28 +9,12 @@ import numpy
 robot = Robot()
 VELOCITY = 6.28
 TIMESTEP = 32
+MAXLIDARDISTANCE = 0.14
 
 
 # **************************** #
 # *** INITIALIZER - DRIVER *** #
 # **************************** #
-
-pSensor1 = robot.getDevice("distance sensor1")
-pSensor2 = robot.getDevice("distance sensor2")
-pSensor3 = robot.getDevice("distance sensor3")
-pSensor4 = robot.getDevice("distance sensor4")
-pSensor5 = robot.getDevice("distance sensor5")
-pSensor6 = robot.getDevice("distance sensor6")
-pSensor7 = robot.getDevice("distance sensor7")
-pSensor8 = robot.getDevice("distance sensor8")
-pSensor1.enable(TIMESTEP)
-pSensor2.enable(TIMESTEP)
-pSensor3.enable(TIMESTEP)
-pSensor4.enable(TIMESTEP)
-pSensor5.enable(TIMESTEP)
-pSensor6.enable(TIMESTEP)
-pSensor7.enable(TIMESTEP)
-pSensor8.enable(TIMESTEP)
 
 rWheel = robot.getDevice("wheel1 motor")
 lWheel = robot.getDevice("wheel2 motor")
@@ -104,8 +88,88 @@ def delay(ms):
 
 def avoidingHole():
     spinOnRight()
-    delay(500)
+    delay(300)
     goForward
+
+def getLidarDistanceFront():
+    lidarArray = lidar.getRangeImage()
+    avgDistance = 0.0
+    rightValue = 0
+    # print("-----------------------------------")
+    for i in list(range(1023, 1055)) + list(range(1503, 1535)):
+        if lidarArray[i] < MAXLIDARDISTANCE:
+            avgDistance += lidarArray[i]
+            rightValue += 1
+            # print(f"i {i-1023}: {round(lidarArray[i],3)} ")
+    if rightValue <= 10:
+        return 1.0
+    avgDistance = round(avgDistance / rightValue, 3)
+    # print(f"The average front distance is :  {avgDistance}")
+    return avgDistance
+
+def getLidarDistanceRight():
+    lidarArray = lidar.getRangeImage()
+    avgDistance = 0.0
+    rightValue = 0
+    # print("-----------------------------------")
+    for i in range(1119, 1183):
+        if lidarArray[i] < MAXLIDARDISTANCE:
+            avgDistance += lidarArray[i]
+            rightValue += 1
+            # print(f"i {i-1023}: {round(lidarArray[i],3)} ")
+    if rightValue <= 10:
+        return 1.0
+    avgDistance = round(avgDistance / rightValue, 3)
+    # print(f"The average right distance is :  {avgDistance}")
+    return avgDistance
+
+def getLidarDistanceBack():
+    lidarArray = lidar.getRangeImage()
+    avgDistance = 0.0
+    rightValue = 0
+    # print("-----------------------------------")
+    for i in range(1247, 1311):
+        if lidarArray[i] < MAXLIDARDISTANCE:
+            avgDistance += lidarArray[i]
+            rightValue += 1
+            # print(f"i {i-1023}: {round(lidarArray[i],3)} ")
+    if rightValue <= 10:
+        return 1.0
+    avgDistance = round(avgDistance / rightValue, 3)
+    # print(f"The average back distance is :  {avgDistance}")
+    return avgDistance
+
+def getLidarDistanceLeft():
+    lidarArray = lidar.getRangeImage()
+    avgDistance = 0.0
+    rightValue = 0
+    # print("-----------------------------------")
+    for i in range(1375, 1439):
+        if lidarArray[i] < MAXLIDARDISTANCE:
+            avgDistance += lidarArray[i]
+            rightValue += 1
+            # print(f"i {i-1023}: {round(lidarArray[i],3)} ")
+    if rightValue <= 10:
+        return 1.0
+    avgDistance = round(avgDistance / rightValue, 3)
+    # print(f"The average left distance is :  {avgDistance}")
+    return avgDistance
+
+def getLidarDistanceCorner():
+    lidarArray = lidar.getRangeImage()
+    avgDistance = 0.0
+    rightValue = 0
+    # print("-----------------------------------")
+    for i in range(1439, 1503):
+        if lidarArray[i] < MAXLIDARDISTANCE:
+            avgDistance += lidarArray[i]
+            rightValue += 1
+            # print(f"i {i-1023}: {round(lidarArray[i],3)} ")
+    if rightValue <= 10:
+        return 1.0
+    avgDistance = round(avgDistance / rightValue, 3)
+    # print(f"The average left distance is :  {avgDistance}")
+    return avgDistance
     
 
 # ************ #
@@ -127,9 +191,10 @@ def main():
 
         print("-------------------------------------")
         print("MEASUREMENT")
-        print(f" - LEFT WALL: {pSensor7.getValue()*100}")
-        print(f" - FRONT WALL: {pSensor1.getValue()*100}")
-        print(f" - LEFT CORNER: {pSensor8.getValue()*100}")
+        print(f" - LEFT WALL: {getLidarDistanceLeft()}")
+        print(f" - FRONT WALL: {getLidarDistanceFront()}")
+        print(f" - LEFT CORNER: {getLidarDistanceCorner()}")
+        print(f" - X: {getPosition[0]}    - Y: {getPosition[1]}")
 
         r, g, b = getColour()
         print(f" - R: {r}, - G: {g}, - B: {b}")
@@ -141,9 +206,9 @@ def main():
         # *** MOVEMENT *** #
         # **************** #
 
-        lWall = pSensor7.getValue()*100 < 10
-        fWall = pSensor1.getValue()*100 < 10
-        lCorner = pSensor8.getValue()*100 < 10
+        lWall = getLidarDistanceLeft() < 0.07
+        fWall = getLidarDistanceFront() < 0.07
+        lCorner = getLidarDistanceCorner() < 0.07
 
         lSpeed = VELOCITY
         rSpeed = VELOCITY
