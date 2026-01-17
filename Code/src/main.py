@@ -1,5 +1,5 @@
 from controller import Robot
-import numpy as np
+import numpy
 
 
 # **************** #
@@ -8,44 +8,12 @@ import numpy as np
 
 robot = Robot()
 VELOCITY = 6.28
-TIMESTEP = int(robot.getBasicTimeStep())
+TIMESTEP = 32
 
 
-# ******************************* #
-# *** INITIALIZER - COMPONENT *** #
-# ******************************* #
-
-rWheel = robot.getDevice("wheel1 motor")
-lWheel = robot.getDevice("wheel2 motor")
-
-rWheel.setPosition(float("inf"))
-lWheel.setPosition(float("inf"))
-
-rWheel.setVelocity(0)
-lWheel.setVelocity(0)
-
-inertialUnit = robot.getDevice("inertial_unit")
-inertialUnit.enable(TIMESTEP)
-
-rCamera = robot.getDevice("camera1")
-lCamera = robot.getDevice("camera2")
-
-rCamera.enable(TIMESTEP)
-lCamera.enable(TIMESTEP)
-
-sColour = robot.getDevice("colour_sensor")
-sColour.enable(TIMESTEP)
-
-emitter = robot.getDevice("emitter")
-
-receiver = robot.getDevice("receiver")
-receiver.enable(TIMESTEP)
- 
-gps = robot.getDevice("gps")
-gps.enable(TIMESTEP)
-
-lidar = robot.getDevice("lidar")
-lidar.enable(TIMESTEP)
+# **************************** #
+# *** INITIALIZER - DRIVER *** #
+# **************************** #
 
 pSensor1 = robot.getDevice("distance sensor1")
 pSensor2 = robot.getDevice("distance sensor2")
@@ -55,7 +23,6 @@ pSensor5 = robot.getDevice("distance sensor5")
 pSensor6 = robot.getDevice("distance sensor6")
 pSensor7 = robot.getDevice("distance sensor7")
 pSensor8 = robot.getDevice("distance sensor8")
-
 pSensor1.enable(TIMESTEP)
 pSensor2.enable(TIMESTEP)
 pSensor3.enable(TIMESTEP)
@@ -65,9 +32,38 @@ pSensor6.enable(TIMESTEP)
 pSensor7.enable(TIMESTEP)
 pSensor8.enable(TIMESTEP)
 
+rWheel = robot.getDevice("wheel1 motor")
+lWheel = robot.getDevice("wheel2 motor")
+rWheel.setPosition(float("inf"))
+lWheel.setPosition(float("inf"))
+rWheel.setVelocity(0)
+lWheel.setVelocity(0)
+
+rCamera = robot.getDevice("camera1")
+lCamera = robot.getDevice("camera2")
+rCamera.enable(TIMESTEP)
+lCamera.enable(TIMESTEP)
+
+inertialUnit = robot.getDevice("inertial_unit")
+inertialUnit.enable(TIMESTEP)
+
+sColour = robot.getDevice("colour_sensor")
+sColour.enable(TIMESTEP)
+
+receiver = robot.getDevice("receiver")
+receiver.enable(TIMESTEP)
+ 
+lidar = robot.getDevice("lidar")
+lidar.enable(TIMESTEP)
+
+gps = robot.getDevice("gps")
+gps.enable(TIMESTEP)
+
+emitter = robot.getDevice("emitter")
+
 
 # ***************** #
-# *** Functions *** #
+# *** FUNCTIONS *** #
 # ***************** #
 
 def goForward():
@@ -120,11 +116,14 @@ def main():
     stop(100)
     initPosition = getPosition()
     while robot.step(TIMESTEP) != -1:
-        """currentOrientation = getPosition()
+        """ 
+        TODO: DA MIGLIORARE
+
+        currentOrientation = getPosition()
         if initPosition[0]-2 <= currentOrientation[0] <= initPosition[0]+13 and initPosition[1]-2 <= currentOrientation[1] <= initPosition[1]+13:
             print("REACHED STARTING TILE")
             stop(1000)
-            TODO: DA MIGLIORARE"""
+        """
 
         print("-------------------------------------")
         print("MEASUREMENT")
@@ -150,6 +149,7 @@ def main():
         rSpeed = VELOCITY
 
         print("DIRECTION")
+        
         if fWall:
             print(" - Turn right")
             lSpeed = VELOCITY
