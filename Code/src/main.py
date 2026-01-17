@@ -1,5 +1,5 @@
 from controller import Robot
-import numpy
+import numpy as np
 
 
 # **************** #
@@ -71,8 +71,8 @@ def getColour():
 
 def getPosition():
     position = gps.getValues()
-    x = position[0] * 100
-    y = position[2] * 100
+    x = np.round(position[0] * 100)
+    y = np.round(position[2] * 100)
     return x, y
 
 def stop(ms = 2000):
@@ -194,7 +194,7 @@ def main():
         print(f" - LEFT WALL: {getLidarDistanceLeft()}")
         print(f" - FRONT WALL: {getLidarDistanceFront()}")
         print(f" - LEFT CORNER: {getLidarDistanceCorner()}")
-        print(f" - X: {getPosition[0]}    - Y: {getPosition[1]}")
+        print(f" - X: {getPosition()[0]}    - Y: {getPosition()[1]}")
 
         r, g, b = getColour()
         print(f" - R: {r}, - G: {g}, - B: {b}")
