@@ -1,3 +1,4 @@
+"#VRML_SIM R2023b utf8"
 PROTO wall [
 	field SFVec3f            translation                  0 0.03 0                    # Is `Transform.translation`.
     field SFRotation         rotation                     0 1 0 0                  # Is `Transform.rotation`.
