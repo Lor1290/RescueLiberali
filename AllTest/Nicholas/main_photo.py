@@ -12,7 +12,7 @@ robot = Robot()
 VELOCITY = 6.28
 TIMESTEP = 32
 MAXLIDARDISTANCE = 0.14
-IMAGECOUNTER = 0
+IMAGECOUNTER = 700
 IMAGEWIDTHLENGHT = 64
 
 # **************************** #
@@ -196,10 +196,10 @@ def writeImage():
     rimage_array = np.frombuffer(rimage, dtype=np.uint8).reshape((IMAGEWIDTHLENGHT, IMAGEWIDTHLENGHT, 4))
     limage_rgb = cv2.cvtColor(limage_array, cv2.COLOR_RGBA2RGB)
     rimage_rgb = cv2.cvtColor(rimage_array, cv2.COLOR_RGBA2RGB)
-    limage_resized = cv2.resize(limage_rgb, (64, 64))
-    rimage_resized = cv2.resize(rimage_rgb, (64, 64))
-    cv2.imwrite(rf"C:\Users\mmich\PycharmProjects\RescueLiberali\AllTest\Nicholas\Images\left_image{IMAGECOUNTER}.jpg",limage_resized)
-    cv2.imwrite(rf"C:\Users\mmich\PycharmProjects\RescueLiberali\AllTest\Nicholas\Images\right_image{IMAGECOUNTER}.jpg",rimage_resized)
+    # limage_resized = cv2.resize(limage_rgb, (64, 64))
+    # rimage_resized = cv2.resize(rimage_rgb, (64, 64))
+    cv2.imwrite(rf"C:\Users\mmich\PycharmProjects\RescueLiberali\AllTest\Nicholas\Images\left_image{IMAGECOUNTER}.png",limage_rgb)
+    #cv2.imwrite(rf"C:\Users\mmich\PycharmProjects\RescueLiberali\AllTest\Nicholas\Images\right_image{IMAGECOUNTER}.png",rimage_rgb)
 
 
 # ************ #
@@ -245,23 +245,23 @@ def main():
 
         print("DIRECTION")
 
-        if fWall:
-            print(" - Turn right")
-            lSpeed = VELOCITY
-            rSpeed = -VELOCITY
-        else:
-            if lWall:
-                print(" - Drive forward")
-                lWall = VELOCITY
-                rSpeed = VELOCITY
-            else:
-                print(" - Turn left")
-                lSpeed = VELOCITY / 16
-                rSpeed = VELOCITY
-            if lCorner:
-                print(" - Too close, turn right")
-                lSpeed = VELOCITY
-                rSpeed = VELOCITY / 16
+        # if fWall:
+        #     print(" - Turn right")
+        #     lSpeed = VELOCITY
+        #     rSpeed = -VELOCITY
+        # else:
+        #     if lWall:
+        #         print(" - Drive forward")
+        #         lWall = VELOCITY
+        #         rSpeed = VELOCITY
+        #     else:
+        #         print(" - Turn left")
+        #         lSpeed = VELOCITY / 16
+        #         rSpeed = VELOCITY
+        #     if lCorner:
+        #         print(" - Too close, turn right")
+        #         lSpeed = VELOCITY
+        #         rSpeed = VELOCITY / 16
 
         print("-------------------------------------", "\n", "\n")
 
