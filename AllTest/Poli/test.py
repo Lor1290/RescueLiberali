@@ -92,7 +92,7 @@ def getPosition():
 
 def stop(ms = 2000):
     rWheel.setVelocity(0)
-    lWhe el.setVelocity(0)
+    lWheel.setVelocity(0)
     delay(ms)
 
 def delay(ms):
@@ -101,16 +101,39 @@ def delay(ms):
         if (robot.getTime() - initTime) * 1000 >= ms:
             break 
 
-def getRight():
-    bRight = pSensor1.getValues() * 100
-    tRight = pSenso2.getValue() * 100
+def getFront():
+    fDistance = pSensor1.getValue() * 100
+    return fDistance 
 
-    return bRight, tRight 
+def getRight():
+    trDistance = pSensor2.getValue() * 100
+    mrDistance = pSensor3.getValue() * 100
+    brDistance = pSensor4.getValue() * 100
+
+    return trDistance, mrDistance, brDistance
 
 def getLeft():
-    b
+    tlDistance = pSensor8.getValue() * 100
+    mlDistance = pSensor7.getValue() * 100
+    blDistance = pSensor6.getValue() * 100 
 
-def main():
+    return tlDistance, mlDistance, blDistance 
+
+def getBack():
+    bDistance = pSensor5.getValue() * 100
+    return bDistance
+
+def main(): 
     while robot.step(TIMESTEP) != -1:
+        stop(100)
+        goForward()
 
-        
+        # while robot.step(TIMESTEP) != -1:
+        #     print(" --- SENSOR DATA ---")
+        #     print(f"[F] {getFront()}")
+        #     print(f"[R] {getRight()}")
+        #     print(f"[L] {getLeft()}")
+        #     print(f"[B] {getBack()}")
+
+if __name__ == '__main__':
+    main()
