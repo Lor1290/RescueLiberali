@@ -1,5 +1,5 @@
 from controller import Robot
-import numpy as np
+import numpy as np, time
 
 
 # **************** #
@@ -12,6 +12,10 @@ TIMESTEP = 32
 MAXLIDARDISTANCE = 0.14
 MAP_SIZE = 200
 ORIG = int(MAP_SIZE/2)
+
+last_save = 0
+SAVE_INTERVAL = 0.1  # secondi, 0.1 = 10 volte al secondo
+
 
 grid = [[0 for _ in range(MAP_SIZE)] 
             for _ in range(MAP_SIZE)]
@@ -188,11 +192,13 @@ def updateMap():
     bWall = getLidarDistanceBack() < 0.07
     fWall = getLidarDistanceFront() < 0.07
 
-    posX = int(getPosition()[0]) 
-    posY = int(getPosition()[1])
+    posX = int(getPosition()[1]) 
+    posY = int(getPosition()[0])
+
+    global grid, last_save
 
     grid[ORIG][ORIG] = "ORIGIN"
-    print(f" - BOX X: {ORIG + posX}         - BOX Y: {ORIG + posY}")
+    print(f" - BOX X: {ORIG + posX}    - BOX Y: {ORIG + posY}")
 
 
     # ****************** #
@@ -200,13 +206,80 @@ def updateMap():
     # ****************** #
 
     if lWall:
-        grid[ORIG+posX-2][ORIG+posY] = 1
+        grid[ORIG+posX-2][ORIG+posY] = 1    # left center
+        grid[ORIG+posX-2][ORIG+posY-1] = 1  # left top
+        grid[ORIG+posX-2][ORIG+posY+1] = 1  # left bottom
     if rWall:
-        grid[ORIG+posX+2][ORIG+posY] = 1
+        grid[ORIG+posX+2][ORIG+posY] = 1    # right center
+        grid[ORIG+posX+2][ORIG+posY-1] = 1  # right top
+        grid[ORIG+posX+2][ORIG+posY+1] = 1  # right bottom
     if bWall:
-        grid[ORIG+posX+2][ORIG+posY] = 1
+        grid[ORIG+posX][ORIG+posY-2] = 1    # back center
+        grid[ORIG+posX-1][ORIG+posY-2] = 1  # back left
+        grid[ORIG+posX+1][ORIG+posY-2] = 1  # back right
     if fWall:
-        grid[ORIG+posX-2][ORIG+posY] = 1
+        grid[ORIG+posX][ORIG+posY+2] = 1    # front center
+        grid[ORIG+posX-1][ORIG+posY+2] = 1  # front left
+        grid[ORIG+posX+1][ORIG+posY+2] = 1  # front right
+
+    
+    # ******************* #
+    # *** TILES CHECK *** #
+    # ******************* #
+
+    r, g, b = getColour()
+
+    # BLUE
+    if 35 <= r <= 84 and 35 <= g <= 84 and 202 <= b <= 255:
+        grid[ORIG+posX-1][ORIG+posY-1] = 'b'  # top left
+        grid[ORIG+posX+1][ORIG+posY-1] = 'b'  # top right
+        grid[ORIG+posX-1][ORIG+posY+1] = 'b' # bottom left
+        grid[ORIG+posX+1][ORIG+posY+1] = 'b'  # bottom right
+
+    # PURPLE
+    if 179 <= r <= 182 and 82 <= g <= 84 and 246 <= b <= 248:
+        grid[ORIG+posX-1][ORIG+posY-1] = 'p'  # top left
+        grid[ORIG+posX+1][ORIG+posY-1] = 'p'  # top right
+        grid[ORIG+posX-1][ORIG+posY+1] = 'p'  # bottom left
+        grid[ORIG+posX+1][ORIG+posY+1] = 'p'  # bottom right
+    
+    # RED
+    if r == 255 and 79 <= g <= 84 and 79 <= b <= 84:
+        grid[ORIG+posX-1][ORIG+posY-1] = 'r'  # top left
+        grid[ORIG+posX+1][ORIG+posY-1] = 'r'  # top right
+        grid[ORIG+posX-1][ORIG+posY+1] = 'r'  # bottom left
+        grid[ORIG+posX+1][ORIG+posY+1] = 'r'  # bottom right
+    
+    # GREEN
+    if 18 <= r <= 44 and 184 <= g <= 255 and 18 <= b <= 44:
+        grid[ORIG+posX-1][ORIG+posY-1] = 'g'  # top left
+        grid[ORIG+posX+1][ORIG+posY-1] = 'g'  # top right
+        grid[ORIG+posX-1][ORIG+posY+1] = 'g'  # bottom left
+        grid[ORIG+posX+1][ORIG+posY+1] = 'g'  # bottom right
+    
+    # ORANGE
+    if 189 <= r <= 255 and 139 <= g <= 250 and 1 <= b <= 8:
+        grid[ORIG+posX-1][ORIG+posY-1] = 'o'  # top left
+        grid[ORIG+posX+1][ORIG+posY-1] = 'o'  # top right
+        grid[ORIG+posX-1][ORIG+posY+1] = 'o'  # bottom left
+        grid[ORIG+posX+1][ORIG+posY+1] = 'o'  # bottom right
+    
+    # YELLOW
+    if 240 <= r <= 255 and 240 <= g <= 255 and 50 <= b <= 84:
+        grid[ORIG+posX-1][ORIG+posY-1] = 'y'  # top left
+        grid[ORIG+posX+1][ORIG+posY-1] = 'y'  # top right
+        grid[ORIG+posX-1][ORIG+posY+1] = 'y'  # bottom left
+        grid[ORIG+posX+1][ORIG+posY+1] = 'y'  # bottom right
+    
+    now = time.time()
+    if now - last_save >= SAVE_INTERVAL:
+        # scrive tutta la griglia così com'è
+        with open("/home/khr0me/Documents/GITHUB/RescueLiberali/AllTest/Casonato/grid.txt", "w") as f:
+            for row in grid:
+                # ogni cella separata da uno spazio
+                f.write(" ".join(str(cell) for cell in row) + "\n")
+
+        last_save = now
 
     # return grid
 
@@ -255,7 +328,6 @@ def main():
         print(f" - R: {r}, - G: {g}, - B: {b}")
         # if 10 <= r <= 30 and 10 <= g <= 30 and 10 <= b <= 30:    # MI FUNZIONA SOLO COSì :(     (CIRCA)
         if 50 <= r <= 60 and 50 <= g <= 60 and 50 <= b <= 60:
-
             print("BLACK HOLE DETECTED")
             avoidingHole()
 
