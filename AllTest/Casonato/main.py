@@ -11,15 +11,16 @@ VELOCITY = 6.28
 TIMESTEP = 32
 MAXLIDARDISTANCE = 0.14
 MAP_SIZE = 200
+ORIG = int(MAP_SIZE/2)
 
 grid = [[0 for _ in range(MAP_SIZE)] 
             for _ in range(MAP_SIZE)]
 
-for i in range(MAP_SIZE):
-    grid[0][i] = 1            # muro superiore
-    grid[MAP_SIZE-1][i] = 1   # muro inferiore
-    grid[i][0] = 1            # muro sinistro
-    grid[i][MAP_SIZE-1] = 1   # muro destro
+# for i in range(MAP_SIZE):     NON NECESSARIO -> ASSEGNAMENTO INUTILE
+#     grid[0][i] = 1            # muro superiore
+#     grid[MAP_SIZE-1][i] = 1   # muro inferiore
+#     grid[i][0] = 1            # muro sinistro
+#     grid[i][MAP_SIZE-1] = 1   # muro destro
 
 
 # **************************** #
@@ -99,7 +100,7 @@ def delay(ms):
 def avoidingHole():
     spinOnRight()
     delay(300)
-    goForward
+    goForward()
 
 def getLidarDistanceFront():
     lidarArray = lidar.getRangeImage()
@@ -187,12 +188,28 @@ def updateMap():
     bWall = getLidarDistanceBack() < 0.07
     fWall = getLidarDistanceFront() < 0.07
 
-    checkX = getPosition()[0] > 0
-    checkY = getPosition()[1] > 0
+    posX = int(getPosition()[0]) 
+    posY = int(getPosition()[1])
 
-    # if lWall:
-    
-    return grid
+    grid[ORIG][ORIG] = "ORIGIN"
+    print(f" - BOX X: {ORIG + posX}         - BOX Y: {ORIG + posY}")
+
+
+    # ****************** #
+    # *** WALL CHECK *** #
+    # ****************** #
+
+    if lWall:
+        grid[ORIG+posX-2][ORIG+posY] = 1
+    if rWall:
+        grid[ORIG+posX+2][ORIG+posY] = 1
+    if bWall:
+        grid[ORIG+posX+2][ORIG+posY] = 1
+    if fWall:
+        grid[ORIG+posX-2][ORIG+posY] = 1
+
+    # return grid
+
 
 # ************ #
 # *** MAIN *** #
@@ -231,12 +248,14 @@ def main():
         print(f" - LEFT WALL: {getLidarDistanceLeft()}")
         print(f" - FRONT WALL: {getLidarDistanceFront()}")
         print(f" - LEFT CORNER: {getLidarDistanceCorner()}")
-        print(f" - X: {getPosition()[0]}    - Y: {getPosition()[1]}")
-        print(f" - GRID: {updateMap()}")
+        print(f" - MAP X: {getPosition()[0]}    - MAP Y: {getPosition()[1]}")
+        updateMap()
 
         r, g, b = getColour()
         print(f" - R: {r}, - G: {g}, - B: {b}")
+        # if 10 <= r <= 30 and 10 <= g <= 30 and 10 <= b <= 30:    # MI FUNZIONA SOLO COSì :(     (CIRCA)
         if 50 <= r <= 60 and 50 <= g <= 60 and 50 <= b <= 60:
+
             print("BLACK HOLE DETECTED")
             avoidingHole()
 
