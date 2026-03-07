@@ -1,5 +1,6 @@
 from controller import Robot
 import numpy as np
+import struct
 
 
 # **************** #
@@ -89,7 +90,7 @@ def delay(ms):
 def avoidingHole():
     spinOnRight()
     delay(300)
-    goForward
+    goForward()
 
 def getLidarDistanceFront():
     lidarArray = lidar.getRangeImage()
@@ -170,6 +171,19 @@ def getLidarDistanceCorner():
     avgDistance = round(avgDistance / rightValue, 3)
     # print(f"The average left distance is :  {avgDistance}")
     return avgDistance
+
+def score(ch):
+    stop()
+    victimType = bytes(ch, "utf-8")
+    print("motor stopped")
+    position = gps.getValues()  # Get the current gps position of the robot
+    x = int(position[0] * 100)  # Get the xy coordinates, multiplying by 100 to convert from meters to cm
+    y = int(position[2] * 100)
+    message = struct.pack("i i c", x, y, victimType)
+    print(f"[+] Position X: {x} Position Y: {y}")
+    print(f"[DEBUG] Sending message: {message} (length: {len(message)})")
+    #emitter.send(message)
+    print("[INFO] Message sent. motor ripartito")
     
 
 # ************ #
