@@ -1,10 +1,6 @@
-import sys
-
 import cv2
-from PIL.TiffImagePlugin import IMAGEWIDTH
 from controller import Robot
 import numpy as np
-import os as poli
 
 # **************** #
 # *** CONSTANT *** #
@@ -14,7 +10,7 @@ robot = Robot()
 VELOCITY = 6.28
 TIMESTEP = 32
 MAXLIDARDISTANCE = 0.14
-IMAGECOUNTER = 700
+IMAGECOUNTER = 0
 IMAGEWIDTHLENGHT = 64
 
 # **************************** #
@@ -202,7 +198,7 @@ def writeImage():
     # rimage_resized = cv2.resize(rimage_rgb, (64, 64))
     cv2.imwrite(rf"left_image{IMAGECOUNTER}.png",limage_rgb)
     #cv2.imwrite(rf"right_image{IMAGECOUNTER}.png",rimage_rgb)
-    #stampa i punti a \Erebus-v24_1_0\game\controllers\robot0Controller
+    #stampa i punti a \Erebus-26.0.0\game\controllers\robot0Controller
 
 # ************ #
 # *** MAIN *** #
