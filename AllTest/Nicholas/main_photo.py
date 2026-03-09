@@ -1,3 +1,5 @@
+import sys
+
 import cv2
 from PIL.TiffImagePlugin import IMAGEWIDTH
 from controller import Robot
@@ -198,9 +200,9 @@ def writeImage():
     rimage_rgb = cv2.cvtColor(rimage_array, cv2.COLOR_RGBA2RGB)
     # limage_resized = cv2.resize(limage_rgb, (64, 64))
     # rimage_resized = cv2.resize(rimage_rgb, (64, 64))
-    cv2.imwrite(rf"C:\Users\mmich\PycharmProjects\RescueLiberali\AllTest\Nicholas\Images\left_image{IMAGECOUNTER}.png",limage_rgb)
-    #cv2.imwrite(rf"C:\Users\mmich\PycharmProjects\RescueLiberali\AllTest\Nicholas\Images\right_image{IMAGECOUNTER}.png",rimage_rgb)
-
+    cv2.imwrite(rf"left_image{IMAGECOUNTER}.png",limage_rgb)
+    #cv2.imwrite(rf"right_image{IMAGECOUNTER}.png",rimage_rgb)
+    #stampa i punti a \Erebus-v24_1_0\game\controllers\robot0Controller
 
 # ************ #
 # *** MAIN *** #
