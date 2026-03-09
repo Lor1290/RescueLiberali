@@ -12,3 +12,4 @@
 - [@khr0me](https://www.github.com/khr0me)
 - [@what-a-simo](https://www.github.com/what-a-simo)
 - [@xBabriele](https://www.github.com/xBabriele)
+- [@RawandoS](https://www.github.com/RawandoS)
