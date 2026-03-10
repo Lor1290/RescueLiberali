@@ -54,6 +54,9 @@ MAX_RANGE = lidar.getMaxRange()
 FOV = lidar.getFov()
 ROTATION_OFFSET = -math.pi / 2.0
 ANGLES = -np.linspace(-FOV / 2.0, FOV / 2.0, RESOLUTION, endpoint=False, dtype=np.float32) + ROTATION_OFFSET
+GRID_SIZE = 3.0
+global_map_points = set()
+plot_counter = 0
 
 
 # ***************** #
@@ -85,8 +88,8 @@ def getColour():
 
 def getPosition():
     position = gps.getValues()
-    x = np.round(position[0] * 100)
-    y = np.round(position[2] * 100)
+    x = position[0] * 100
+    y = position[2] * 100
     return x, y
 
 
@@ -112,7 +115,6 @@ def avoidingHole():
 def getLidarDistanceFront(layer_data):
     avgDistance = 0.0
     rightValue = 0
-    # Davanti: da 480 a 511 (sinistra-avanti) e da 0 a 31 (destra-avanti)
     for i in list(range(480, 512)) + list(range(0, 32)):
         if layer_data[i] < MAXLIDARDISTANCE:
             avgDistance += layer_data[i]
@@ -125,7 +127,6 @@ def getLidarDistanceFront(layer_data):
 def getLidarDistanceRight(layer_data):
     avgDistance = 0.0
     rightValue = 0
-    # Destra: indici da 96 a 160 (centro a 128)
     for i in range(96, 160):
         if layer_data[i] < MAXLIDARDISTANCE:
             avgDistance += layer_data[i]
@@ -138,7 +139,6 @@ def getLidarDistanceRight(layer_data):
 def getLidarDistanceBack(layer_data):
     avgDistance = 0.0
     rightValue = 0
-    # Dietro: indici da 224 a 288 (centro a 256)
     for i in range(224, 288):
         if layer_data[i] < MAXLIDARDISTANCE:
             avgDistance += layer_data[i]
@@ -151,7 +151,6 @@ def getLidarDistanceBack(layer_data):
 def getLidarDistanceLeft(layer_data):
     avgDistance = 0.0
     rightValue = 0
-    # Sinistra: indici da 352 a 416 (centro a 384)
     for i in range(352, 416):
         if layer_data[i] < MAXLIDARDISTANCE:
             avgDistance += layer_data[i]
@@ -164,7 +163,6 @@ def getLidarDistanceLeft(layer_data):
 def getLidarDistanceCorner(layer_data):
     avgDistance = 0.0
     rightValue = 0
-    # Angolo sinistro: indici da 416 a 480 (centro a 448)
     for i in range(416, 480):
         if layer_data[i] < MAXLIDARDISTANCE:
             avgDistance += layer_data[i]
@@ -174,73 +172,49 @@ def getLidarDistanceCorner(layer_data):
     return round(avgDistance / rightValue, 3)
 
 
-def polarToCartesian(layer_data):
-    distances_m = np.array(layer_data, dtype=np.float32)
-    valid_mask = (distances_m < (MAX_RANGE - 0.01)) & (~np.isinf(distances_m))
-
-    distances_cm = distances_m * 100
-
-    x, y = cv2.polarToCart(distances_cm, ANGLES, angleInDegrees=False)
-    x = x.flatten()
-    y = y.flatten()
-
-    x[~valid_mask] = np.nan
-    y[~valid_mask] = np.nan
-    return x, y
-
-
-def plotLidar3d(x1, y1, x2, y2):
-    z1 = np.full(x1.shape, 6.0)
-    z2 = np.full(x2.shape, 5.0)
-
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
-
-    ax.scatter(x1, y1, z1, c='blue', label='Layer 1', s=10)
-    ax.scatter(x2, y2, z2, c='cyan', label='Layer 2', s=10)
-
-    ax.scatter(0, 0, 0, c='red', marker='X', s=100, label='Robot')
-
-    ax.set_xlabel('Asse X (cm)')
-    ax.set_ylabel('Asse Y (cm)')
-    ax.set_zlabel('Altezza Z (cm)')
-    ax.set_title('Scansione 3D dei muri di Erebus')
-
-    ax.set_box_aspect([1, 1, 0.5])
-    ax.legend()
-    plt.savefig('/Users/simone/Documents/develop/python/rcj_simulation/map.png')
-    plt.close(fig)
-
-
 def buildMap2D(layer_data):
+    global global_map_points, plot_counter
+
     distances_m = np.array(layer_data, dtype=np.float32)
-    valid_mask = (distances_m < (MAX_RANGE - 0.01)) & (~np.isinf(distances_m))
+    valid_mask = (distances_m < (MAX_RANGE - 0.05)) & (~np.isinf(distances_m))
     distances_cm = distances_m * 100
 
     robot_yaw = inertialUnit.getRollPitchYaw()[2]
-
     absolute_angles = ANGLES + robot_yaw
 
     x, y = cv2.polarToCart(distances_cm, absolute_angles, angleInDegrees=False)
+    x_rel = x.flatten()[valid_mask]
+    y_rel = y.flatten()[valid_mask]
 
-    x_valid = x.flatten()[valid_mask]
-    y_valid = y.flatten()[valid_mask]
+    robot_x, robot_y = getPosition()
+    global_x = x_rel + robot_x
+    global_y = y_rel - robot_y
 
-    fig, ax = plt.subplots(figsize=(8, 8))
+    for i in range(len(global_x)):
+        gx = int(round(global_x[i] / GRID_SIZE) * GRID_SIZE)
+        gy = int(round(global_y[i] / GRID_SIZE) * GRID_SIZE)
+        global_map_points.add((gx, gy))
 
-    ax.scatter(x_valid, y_valid, c='blue', s=15, label='Muri (Nord Assoluto)')
-    ax.scatter(0, 0, c='red', marker='X', s=100, label='Robot')
+    plot_counter += 1
+    if plot_counter % 15 == 0:
+        if len(global_map_points) > 0:
+            map_x, map_y = zip(*global_map_points)
+        else:
+            map_x, map_y = [], []
 
-    ax.set_aspect('equal', 'box')
+        fig, ax = plt.subplots(figsize=(8, 8), facecolor='black')
+        ax.set_facecolor('black')
 
-    ax.set_xlabel('Est / Ovest (Asse X in cm)')
-    ax.set_ylabel('Nord / Sud (Asse Y in cm)')
-    ax.set_title('Mappa 2D Globale (Nord in alto)')
-    ax.grid(True, linestyle='--', alpha=0.6)
-    ax.legend()
+        ax.scatter(map_x, map_y, c='#0055FF', s=150, alpha=0.5)
 
-    plt.savefig('/Users/simone/Documents/develop/python/rcj_simulation/map_test_2.png')
-    plt.close(fig)
+        ax.scatter(robot_x, -robot_y, c='red', marker='X', s=50)
+
+        ax.set_aspect('equal', 'box')
+        ax.axis('off')
+
+        plt.savefig('/Users/simone/Documents/develop/python/rcj_simulation/map_test_2.png',
+                    facecolor='black', bbox_inches='tight', pad_inches=0)
+        plt.close(fig)
 
 
 # ************ #
