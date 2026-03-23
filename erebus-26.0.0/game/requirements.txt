@@ -1,0 +1,10 @@
+certifi==2026.2.25
+charset-normalizer==3.4.6
+idna==3.11
+numpy==2.4.3
+opencv-python==4.13.0.92
+overrides==7.7.0
+pillow==12.1.1
+requests==2.32.5
+termcolor==3.3.0
+urllib3==2.6.3
