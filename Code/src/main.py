@@ -3,7 +3,7 @@ import numpy as np
 import math
 import cv2
 import matplotlib.pyplot as plt
-
+from ws_bridge import start_bridge, send_frame, set_command_callback
 
 robot = Robot()
 TIMESTEP = 32
@@ -53,11 +53,19 @@ RESOLUTION = lidar.getHorizontalResolution()
 MAX_RANGE = lidar.getMaxRange()
 FOV = lidar.getFov()
 ROTATION_OFFSET = -math.pi / 2.0
-ANGLES = -np.linspace(-FOV / 2.0, FOV / 2.0, RESOLUTION, endpoint=False, dtype=np.float32) + ROTATION_OFFSET
+ANGLES = (
+    -np.linspace(-FOV / 2.0, FOV / 2.0, RESOLUTION, endpoint=False, dtype=np.float32)
+    + ROTATION_OFFSET
+)
 GRID_SIZE = 3.0
 global_map_points = set()
 plot_counter = 0
+start_bridge()
 
+AUTO_NAV = True
+DEBUG_MODE = False
+LOP_TRIGGERED = False
+MANUAL_CMD = "stop"
 
 # ***************** #
 # *** FUNCTIONS *** #
@@ -77,6 +85,54 @@ def spinOnRight():
     rWheel.setVelocity(-VELOCITY)
     lWheel.setVelocity(VELOCITY)
 
+
+def apply_manual_command():
+    if MANUAL_CMD == "w":
+        return VELOCITY, VELOCITY
+    if MANUAL_CMD == "s":
+        return -VELOCITY, -VELOCITY
+    if MANUAL_CMD == "d":
+        return VELOCITY * 0.7, -VELOCITY * 0.7
+    if MANUAL_CMD == "a":
+        return -VELOCITY * 0.7, VELOCITY * 0.7
+    return 0.0, 0.0
+
+def handle_dashboard_command(cmd):
+    global VELOCITY, AUTO_NAV, DEBUG_MODE, LOP_TRIGGERED, MANUAL_CMD
+
+    command = cmd.get("cmd")
+
+    if command == "set_variable":
+        key = cmd.get("key")
+        value = cmd.get("value")
+        if key == "max_speed":
+            try:
+                VELOCITY = max(0.0, min(6.28, float(value)))
+            except Exception:
+                pass
+        elif key == "debug_mode":
+            DEBUG_MODE = bool(value)
+        elif key == "auto_nav":
+            AUTO_NAV = bool(value)
+            if AUTO_NAV:
+                MANUAL_CMD = "stop"
+        elif key == "LoP" and bool(value):
+            LOP_TRIGGERED = True
+    elif command == "lop_trigger":
+        LOP_TRIGGERED = True
+    elif command == "manual_drive":
+        direction = str(cmd.get("direction", "stop")).lower()
+        if direction in ["w", "a", "s", "d", "stop"]:
+            MANUAL_CMD = direction
+            AUTO_NAV = False
+    elif command == "manual_stop":
+        MANUAL_CMD = "stop"
+    elif command == "restart_navigation":
+        AUTO_NAV = True
+        MANUAL_CMD = "stop"
+
+
+set_command_callback(handle_dashboard_command)
 
 def getColour():
     image = sColour.getImage()
@@ -202,18 +258,22 @@ def buildMap2D(layer_data):
         else:
             map_x, map_y = [], []
 
-        fig, ax = plt.subplots(figsize=(8, 8), facecolor='black')
-        ax.set_facecolor('black')
+        fig, ax = plt.subplots(figsize=(8, 8), facecolor="black")
+        ax.set_facecolor("black")
 
-        ax.scatter(map_x, map_y, c='#0055FF', s=150, alpha=0.5)
+        ax.scatter(map_x, map_y, c="#0055FF", s=150, alpha=0.5)
 
-        ax.scatter(robot_x, -robot_y, c='red', marker='X', s=50)
+        ax.scatter(robot_x, -robot_y, c="red", marker="X", s=50)
 
-        ax.set_aspect('equal', 'box')
-        ax.axis('off')
+        ax.set_aspect("equal", "box")
+        ax.axis("off")
 
-        plt.savefig('/Users/simone/Documents/develop/python/rcj_simulation/map_test_2.png',
-                    facecolor='black', bbox_inches='tight', pad_inches=0)
+        plt.savefig(
+            "map_test_2.png",
+            facecolor="black",
+            bbox_inches="tight",
+            pad_inches=0,
+        )
         plt.close(fig)
 
 
@@ -222,10 +282,11 @@ def buildMap2D(layer_data):
 # ************ #
 
 def main():
+    global LOP_TRIGGERED
     stop(100)
     initPosition = getPosition()
     while robot.step(TIMESTEP) != -1:
-        """ 
+        """
         TODO: DA MIGLIORARE
 
         currentOrientation = getPosition()
@@ -234,12 +295,12 @@ def main():
             stop(1000)
         """
 
-        '''print("-------------------------------------")
+        """print("-------------------------------------")
         print("MEASUREMENT")
         print(f" - LEFT WALL: {getLidarDistanceLeft()}")
         print(f" - FRONT WALL: {getLidarDistanceFront()}")
         print(f" - LEFT CORNER: {getLidarDistanceCorner()}")
-        print(f" - X: {getPosition()[0]}    - Y: {getPosition()[1]}")'''
+        print(f" - X: {getPosition()[0]}    - Y: {getPosition()[1]}")"""
 
         range_image = lidar.getRangeImage()
 
@@ -248,6 +309,11 @@ def main():
         layer_2_data = range_image[start_layer_2:end_layer_2]
 
         buildMap2D(layer_2_data)
+
+        if LOP_TRIGGERED:
+            print("[DASHBOARD] LoP trigger received")
+            avoidingHole()
+            LOP_TRIGGERED = False
 
         r, g, b = getColour()
         print(f" - R: {r}, - G: {g}, - B: {b}")
@@ -259,35 +325,41 @@ def main():
         # *** MOVEMENT *** #
         # **************** #
 
-        lWall = getLidarDistanceLeft(layer_2_data) < 0.07
-        fWall = getLidarDistanceFront(layer_2_data) < 0.07
-        lCorner = getLidarDistanceCorner(layer_2_data) < 0.07
-
-        print("DIRECTION")
-
-        if fWall:
-            print(" - Turn right")
-            lSpeed = VELOCITY
-            rSpeed = -VELOCITY
+        if not AUTO_NAV:
+            lSpeed, rSpeed = apply_manual_command()
+            if DEBUG_MODE:
+                print(f"[MANUAL] cmd={MANUAL_CMD} left={lSpeed:.2f} right={rSpeed:.2f}")
         else:
-            if lWall:
-                print(" - Drive forward")
+            lWall = getLidarDistanceLeft(layer_2_data) < 0.07
+            fWall = getLidarDistanceFront(layer_2_data) < 0.07
+            lCorner = getLidarDistanceCorner(layer_2_data) < 0.07
+
+            print("DIRECTION")
+
+            if fWall:
+                print(" - Turn right")
                 lSpeed = VELOCITY
-                rSpeed = VELOCITY
+                rSpeed = -VELOCITY
             else:
-                print(" - Turn left")
-                lSpeed = VELOCITY / 16
-                rSpeed = VELOCITY
-            if lCorner:
-                print(" - Too close, turn right")
-                lSpeed = VELOCITY
-                rSpeed = VELOCITY / 16
+                if lWall:
+                    print(" - Drive forward")
+                    lSpeed = VELOCITY
+                    rSpeed = VELOCITY
+                else:
+                    print(" - Turn left")
+                    lSpeed = VELOCITY / 16
+                    rSpeed = VELOCITY
+                if lCorner:
+                    print(" - Too close, turn right")
+                    lSpeed = VELOCITY
+                    rSpeed = VELOCITY / 16
 
         print("-------------------------------------", "\n", "\n")
 
         rWheel.setVelocity(rSpeed)
         lWheel.setVelocity(lSpeed)
 
+        send_frame(robot)
 
 if __name__ == "__main__":
     main()
